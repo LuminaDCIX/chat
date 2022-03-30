@@ -8,7 +8,7 @@
 from flask import render_template, redirect, url_for, request
 from flask_login import login_required, login_user, logout_user, current_user
 
-from app.chain.chain import register_chain
+from app.chain.chain import *
 from . import main
 from .. import db
 from .forms import LoginForm, CreateUserForm, CreatePerForm, EditUserForm
@@ -18,7 +18,6 @@ import json
 import redis
 from ..socket_conn import socket_send
 import hashlib
-from ..chain import *
 
 
 

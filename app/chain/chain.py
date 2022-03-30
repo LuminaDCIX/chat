@@ -397,7 +397,7 @@ def register_nodes():
     reg_key = key
     nodes = ip
     ip2username[ip] = username
-    dic = {nodes: (reg_port, reg_key, username)}
+    dic = {nodes: (reg_port, reg_key)}
     print(dic)
     json_data = {'nodes': dic}
 
@@ -626,8 +626,10 @@ def get_messages_chain():
 
 def get_user_list():
     userlist = []
-    for _, value in blockchain.nodes:
-        userlist.append(value['username'])
+    print(ip2username)
+    for key in blockchain.nodes.keys():
+        if key in ip2username:
+            userlist.append(ip2username[key])
     return userlist
     
 def client():
