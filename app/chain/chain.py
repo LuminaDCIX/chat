@@ -662,5 +662,13 @@ def client():
     window.close()
 
 def run():
+    print("running")
     app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
 
+
+if __name__ == 'chain':
+    t=threading.Thread(target=run)
+    t.start()
+    q=threading.Thread(target=run_mine)
+    q.start()
+    event.set()
