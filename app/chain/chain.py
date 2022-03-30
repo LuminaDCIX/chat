@@ -13,19 +13,42 @@ from urllib3.exceptions import ConnectTimeoutError
 import socket
 import threading
 import PySimpleGUI as sg
+import netifaces
 
 def get_currentTime():  ##获取当前时间
     currentTime = ctime()
     return currentTime
 
+def get_all_ips():
+    """
+    Find all IPs for this machine.
+
+    :return: ``set`` of IP addresses (``IPAddress``).
+    """
+    ips = set()
+    interfaces = netifaces.interfaces()
+    for interface in interfaces:
+        addresses = netifaces.ifaddresses(interface)
+        for address_family in (netifaces.AF_INET, netifaces.AF_INET6):
+            family_addresses = addresses.get(address_family)
+            if not family_addresses:
+                continue
+            for address in family_addresses:
+                ips.add(address['addr'])
+    return ips 
+
 
 def get_host_ip():
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(('8.8.8.8', 80))
-        ip = s.getsockname()[0]
-    finally:
-        s.close()
+
+        #s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    #s.connect(('8.8.8.8', 80))
+    ips = get_all_ips()
+    print(ips)
+    for _ip in ips:
+        if (_ip.startswith('172')):
+            ip = _ip
+
+        #s.close()
     # rint(type(ip))
     return ip
 
@@ -381,7 +404,7 @@ def full_chain():
 def register_nodes():
     values = request.get_json()
     ip = request.remote_addr
-    print(ip)
+    print("ip =", ip)
 
     # 检查所需要的字段是否位于POST的data中
     required = ['port', 'pub_key', 'username']
@@ -416,7 +439,8 @@ def register_nodes():
 
     response = {
         'message': message,
-        'total_nodes': blockchain.nodes
+        'total_nodes': blockchain.nodes,
+        'ip2username': ip2username
     }
     return jsonify(response), 201
 
@@ -502,12 +526,13 @@ def regiser():
 
 def register_chain(ip, username):
     if ip not in blockchain.nodes.keys():
-        ip2username[ip] = username
+        ip2username[my_ip] = username
         url2 = "http://"+ip+":5000/nodes/register"
         data2 = {'port': 5000, 'pub_key': pub_key, 'username' : username}
         try:
             reply = requests.post(url2, json=data2,timeout=3)
             nodes = reply.json()['total_nodes']
+            ip2username.update(reply.json()['ip2username'])
             blockchain.nodes.update(nodes)
         except requests.exceptions.Timeout as e:
             print("Timeout!")
