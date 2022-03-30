@@ -176,7 +176,7 @@ def join_private_room():
 def join_private_room_ip():
     rname = request.form.get('rname', '')
     ip = request.form.get('ipaddr', '')
-    register_chain(ip)
+    register_chain(ip, current_user.username)
     return redirect(url_for('main.chat', rname=rname))
 
 
