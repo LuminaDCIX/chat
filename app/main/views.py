@@ -6,179 +6,80 @@
 
 
 from flask import render_template, redirect, url_for, request
-from flask_login import login_required, login_user, logout_user, current_user
 
 from app.chain.chain import *
 from . import main
-from .. import db
-from .forms import LoginForm, CreateUserForm, CreatePerForm, EditUserForm
-from ..models import User, Permission, RelUserPermission
 import time
 import json
-import redis
 from ..socket_conn import socket_send
 import hashlib
 
+class User:
+    username = ''
+
+    def is_authenticated(self):
+        return self.username != ''
+
+    def gravatar(self, name=None, size=100, default='identicon', rating='g'):
+        if request.is_secure:
+            url = 'https://secure.gravatar.com/avatar'
+        else:
+            url = 'http://www.gravatar.com/avatar'
+        if name is not None:
+            email = name + "@hihichat.com"
+        else:
+            email = self.username + "@hihichat.com"
+        myhash = hashlib.md5(email.encode('utf-8')).hexdigest()
+        return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(url=url, hash=myhash, size=size,
+                                                                     default=default, rating=rating)
 
 
-pool = redis.ConnectionPool(host='redis-12143.c8.us-east-1-3.ec2.cloud.redislabs.com', port=12143,
-                            decode_responses=True, password='pkAWNdYWfbLLfNOfxTJinm9SO16eSJFx')
-r = redis.Redis(connection_pool=pool)
+current_user = User()
+
 
 # ip2user_name = {}
 
-@main.route('/adddb/', methods=['GET', 'POST'])
-def addbd():
-    db.create_all()
-    return "OK"
-
-
-@main.route('/deldb/', methods=['GET', 'POST'])
-def delbd():
-    db.drop_all()
-    return "OK"
-
-
-@main.route('/adduser/<user>', methods=['GET', 'POST'])
-def adduser1(user):
-    user = User(username=user, password='admin')
-    db.session.add(user)
-    db.session.commit()
-    return "OK"
-
-
-@main.route('/adduser/', methods=['GET', 'POST'])
-@login_required
-def adduser():
-    form = CreateUserForm()
-    if form.validate_on_submit():
-        user = User(username=form.username.data, password=form.password.data)
-        db.session.add(user)
-        db.session.commit()
-        return redirect(url_for('main.index'))
-    return render_template('adduser.html', form=form)
-
-
-@main.route('/listuser/', methods=['GET', 'POST'])
-@login_required
-def listuser():
-    user_list = User.query.all()
-    return render_template('listuser.html', user_list=user_list)
-
-
-@main.route('/addper/', methods=['GET', 'POST'])
-@login_required
-def addper():
-    form = CreatePerForm()
-    old_per = Permission.query.filter_by(permission_name=form.permissionname.data).first()
-    if form.validate_on_submit() and old_per is None:
-        per = Permission(permission_name=form.permissionname.data)
-        db.session.add(per)
-        db.session.commit()
-        return redirect(url_for('main.index'))
-    return render_template('addper.html', form=form)
-
-
-@main.route('/edituser/<int:id>/', methods=['GET', 'POST'])
-@login_required
-def edituser(id):
-    user = User.query.filter_by(id=id).first()
-    form = EditUserForm(user=user)
-    if form.validate_on_submit():
-        for p in form.permission.data:
-            rup = RelUserPermission(user_id=id, permission_id=p)
-            db.session.add(rup)
-            db.session.commit()
-        return redirect(url_for('main.index'))
-    return render_template('edituser.html', form=form)
-
-
 @main.route('/login/', methods=['GET', 'POST'])
 def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
-        if user is not None and user.verify_password(form.password.data):
-            login_user(user)
-            return redirect(url_for('main.index'))
-    return render_template('login.html', form=form)
+    username = request.form.get('username', '')
+    print(username)
+    if username != '' :
+        current_user.username = username
+        return redirect(url_for('main.index',current_user=current_user))
+    return render_template('login.html',current_user=current_user)
 
 
 @main.route('/logout/')
-@login_required
 def logout():
-    rname = request.args.get("rname", "")
-    r.zrem("chat-" + rname, current_user.username)
-    logout_user()
+    current_user.username = ''
     return redirect(url_for('main.login'))
 
 
 @main.route('/')
 def home():
-    return render_template('index.html')
+    return render_template('index.html',current_user=current_user)
 
 
 @main.route('/index/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', current_user=current_user)
 
-
-@main.route('/roomlist/', methods=["GET", 'POST'])
-def chat_room_list():
-    roomlist_tmp = r.keys(pattern='chat-*')
-    roomlist = []
-    can_create = False
-    create_room = Permission.query.filter_by(permission_name='createroom').first()
-    if current_user.is_authenticated:
-        rel_user_id = RelUserPermission.query.filter_by(user_id=current_user.id).first()
-        rel_permission = RelUserPermission.query.filter_by(user_id=current_user.id).first()
-        if rel_permission and rel_user_id and create_room:
-            rel_permission_id = rel_permission.permission_id
-            create_room_id = create_room.id
-            if rel_permission_id == create_room_id:
-                can_create = True
-    for i in roomlist_tmp:
-        i_str = str(i)
-        istr_list = i_str.split('-', 1)
-        roomlist.append(istr_list[1])
-    return render_template('chatroomlist.html', roomlist=roomlist, can_create=can_create)
-
-
-@main.route('/createroom/', methods=["GET", 'POST'])
-@login_required
-def create_room():
-    rname = request.form.get('chatroomname', '')
-    if r.exists("chat-" + rname) is False:
-        r.zadd("chat-" + rname, current_user.username, 1)
-        return redirect(url_for('main.chat', rname=rname))
-    else:
-        return redirect(url_for('main.chat_room_list'))
-
-
-@main.route('/joinroom/', methods=["GET", 'POST'])
-def join_chat_room():
-    rname = request.args.get('rname', '')
-    if rname is None:
-        return redirect(url_for('main.chat_room_list'))
-    if current_user.is_authenticated:
-        #r.zadd("chat-" + rname, {current_user.username: time.time()})
-        register_chain(rname)
-    else:
-        pass
-    return redirect(url_for('main.chat', rname=rname))
 
 @main.route('/join_private_room/', methods=["GET", 'POST'])
 def join_private_room():
-    return render_template('join_private_room.html')
+    return render_template('join_private_room.html', current_user=current_user)
+
+@main.route('/new_private_room/', methods=["GET", 'POST'])
+def new_private_room():
+    new_room(current_user.username)
+    return redirect(url_for('main.chat', current_user=current_user))
 
 @main.route('/join_private_room_ip/', methods=["GET", 'POST'])
 def join_private_room_ip():
     rname = request.form.get('rname', '')
     ip = request.form.get('ipaddr', '')
-    register_chain(ip, current_user.username)
-    return redirect(url_for('main.chat', rname=rname))
-
-
+    register(ip)
+    return redirect(url_for('main.chat', rname=rname, current_user=current_user))
 
 
 @main.route('/chat/', methods=['GET', 'POST'])
@@ -189,10 +90,11 @@ def chat():
     # messages = r.zrange("msg-" + rname, 0, -1, withscores=True)
     messages = get_messages_chain()
     msg_list = []
+    print("messages =", messages)
     for i in messages:
-        msg_list.append([json.loads(i[0]), time.strftime("%Y/%m/%d %p%H:%M:%S", time.localtime(i[1]))])
-    if current_user.is_authenticated:
-        return render_template('chat.html', rname=rname, user_list=ulist, msg_list=msg_list)
+        msg_list.append([json.loads(i[0]), i[1]]) #time.strftime("%Y/%m/%d %p%H:%M:%S", time.localtime(i[1]))])
+    if current_user.is_authenticated():
+        return render_template('chat.html', rname=rname, user_list=ulist, msg_list=msg_list, current_user=current_user)
     else:
         email = "youke" + "@hihichat.com"
         hash = hashlib.md5(email.encode('utf-8')).hexdigest()
@@ -203,11 +105,37 @@ def chat():
 
 @main.route('/api/sendchat/<info>', methods=['GET', 'POST'])
 def send_chat(info):
-    if current_user.is_authenticated:
+    if current_user.is_authenticated():
         rname = request.form.get("rname", "")
-        body = {"username": current_user.username, "msg": info}
-        r.zadd("msg-" + rname, {json.dumps(body): time.time()})
-        socket_send(info, current_user.username)
+        post(info)
         return info
     else:
         return info
+
+def register(ip):
+    url = "http://"+my_ip+":5000/client/register"
+    data = {'ip': ip, 'username': current_user.username}
+    requests.post(url, json=data,timeout=3)
+
+def get_user_list():
+    url = "http://"+my_ip+":5000/client/userlist"
+    print(url)
+    reply = requests.post(url,timeout=3).json()
+    print("reply =", reply)
+    return reply['userlist']
+
+
+def get_messages_chain():
+    url = "http://"+my_ip+":5000/client/message"
+    reply = requests.post(url,timeout=3).json()
+    return reply['message']
+
+def post(message):
+    url = "http://"+my_ip+":5000/client/post"
+    data = {'msg': message}
+    requests.post(url, json=data,timeout=3)
+
+def new_room(username):
+    url = "http://"+my_ip+":5000/client/newroom"
+    data = {'username': current_user.username}
+    requests.post(url,json=data,timeout=3)

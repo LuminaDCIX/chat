@@ -16,10 +16,6 @@
             <a class="navbar-brand" href="/">Flasky</a>
         </div>
         <div class="navbar-collapse collapse">
-            <ul class="nav navbar-nav">
-                <li><a href="/">Home</a></li>
-                <li><a href="{{ url_for('main.chat_room_list') }}">Room List</a></li>
-            </ul>
             <ul class="nav navbar-nav navbar-right">
                 {% if current_user.is_authenticated %}
                 <li><a href="{{ url_for('main.logout') }}">Logout</a></li>
@@ -36,6 +32,12 @@
     <div class="page-header">
         <h1>Hello, Welcome!</h1>
     </div>
-    {{ wtf.quick_form(form) }}
+    <form action="{{ url_for('main.login') }}" method="POST" class="comment-form">
+      <div class="form-group comment-form-author">
+        <label for="username">User Name <span class="required">*</span></label>
+        <input class="form-control" id="username" name="username" type="text" value="" size="30" aria-required='true' />
+      </div>
+      <button  name="submit" type="submit" id="submit" class="btn btn-primary" value="Submit Comment">Submit</button>
+  </form>
 </div>
 {% endblock %}

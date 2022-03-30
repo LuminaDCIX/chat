@@ -20,7 +20,7 @@
                 <li><a href="/">Home</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
-                {% if current_user.is_authenticated %}
+                {% if current_user.is_authenticated() %}
                 <li><a href="{{ url_for('main.logout') }}">Logout</a></li>
                 {% else %}
                 <li><a href="{{ url_for('main.login') }}">Login</a></li>
@@ -35,10 +35,7 @@
     <div class="page-header">
         <h1>Hello, {{ current_user.username }}!</h1>
     </div>
-    <a href="{{ url_for('main.chat_room_list') }}" class="btn btn-default" role="button">Go to Chat Room list</a>
-    <a href="{{ url_for('main.adduser') }}" class="btn btn-default" role="button">Add a new user</a>
-    <a href="{{ url_for('main.listuser') }}" class="btn btn-default" role="button">Go to user list</a>
-    <a href="{{ url_for('main.addper') }}" class="btn btn-default" role="button">Add a new permission</a>
     <a href="{{ url_for('main.join_private_room') }}" class="btn btn-default" role="button">Join a new Private Room</a>
+    <a href="{{ url_for('main.new_private_room') }}" class="btn btn-default" role="button">Create a new Private Room</a>
 </div>
 {% endblock %}

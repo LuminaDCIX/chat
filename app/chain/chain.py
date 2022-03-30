@@ -16,6 +16,8 @@ import PySimpleGUI as sg
 import netifaces
 from flask_login import current_user
 
+ip2username = {}
+
 def get_currentTime():  ##获取当前时间
     currentTime = ctime()
     return currentTime
@@ -350,7 +352,7 @@ private_key, pub_key = rsakeys()
 pub_key = pub_key.exportKey().hex()
 blockchain.nodes[my_ip] = (port, pub_key)
 event = threading.Event()
-ip2username = {}
+
 
 
 # 进行挖矿请求
@@ -405,9 +407,8 @@ def full_chain():
 def register_nodes():
     values = request.get_json()
     ip = request.remote_addr
-    print("ip =", ip)
-
     # 检查所需要的字段是否位于POST的data中
+    print(id(ip2username))
     required = ['port', 'pub_key', 'username']
     if not all(k in values for k in required):
         return 'Missing values', 400
@@ -420,6 +421,8 @@ def register_nodes():
         return "Error: Please supply a valid pubKey", 400
     reg_key = key
     nodes = ip
+    print("ip =", ip)
+    print("username =", username)
     ip2username[ip] = username
     dic = {nodes: (reg_port, reg_key)}
     print(dic)
@@ -438,6 +441,7 @@ def register_nodes():
 
     message = blockchain.register_node(nodes, (reg_port, reg_key))
 
+    print(ip2username)
     response = {
         'message': message,
         'total_nodes': blockchain.nodes,
@@ -500,6 +504,14 @@ def run_mine():
         event.wait()
         mine()
         sleep(3)
+        
+@app.route('/client/newroom', methods=['POST'])
+def new_room():
+    username = request.get_json()['username']
+    ip2username[my_ip] = username
+    print(id(ip2username))
+    print(ip2username)
+    return "success", 200
 
 def regiser():
     layout = [
@@ -525,6 +537,30 @@ def regiser():
             sg.Popup(str(e))
     window.close()
 
+@app.route('/client/register', methods=['POST'])
+def register_frontend():
+    reply = request.get_json()
+    ip = reply['ip']
+    username = reply['username']
+    register_chain(ip, username)
+    return "success", 200
+
+@app.route('/client/userlist', methods=['POST'])
+def userlist_frontend():
+    result = get_user_list()
+    return jsonify({'userlist' : result}), 200
+    
+@app.route('/client/message', methods=['POST'])
+def message_frontend():
+    result = get_messages_chain()
+    return jsonify({'message' : result}), 200
+
+@app.route('/client/post', methods=['POST'])
+def post_frontend():
+    message = request.get_json()['msg']
+    post_chain(message)
+    return "success", 200
+
 def register_chain(ip, username):
     if ip not in blockchain.nodes.keys():
         ip2username[my_ip] = username
@@ -540,10 +576,9 @@ def register_chain(ip, username):
             print("Timeout!")
             assert(0)
 
+
+
 def post_chain(message):
-    if len(blockchain.nodes) == 1:
-        sg.Popup("You have not registered to any nodes!")
-        return
     timestamp=get_currentTime()
     ip=my_ip
     hashOfData=shaHash(ip+message+timestamp)
@@ -596,51 +631,6 @@ def post():
     window.close()
 
 
-def get_messages():
-    oneTime = 0
-    layout = [
-        [sg.Text("",key="0")],
-        [sg.Text("",key="1")],
-        [sg.Text("",key="2")],
-        [sg.Text("",key="3")],
-        [sg.Button("Next"),sg.Button("OK")]
-    ]
-    window = sg.Window("Messages",layout=layout,finalize=True)
-    partion = "*"*60
-    print(partion)
-    for block in blockchain.chain:
-        if block['previous_hash'] == 1:
-            continue
-        for trans in block['transactions']:
-            text = ''
-            sender = trans['sender']
-            if sender == "0":
-                continue
-            message = trans['message']
-            time = trans['time']
-            text += '\n**' + partion + '**\n'
-            text += f'**{sender}:' + '\n'
-            m = ' ' * ((len(partion) - len(message)) // 2) + message
-            text += '**' + m + '\n'
-            text +='**' + ' ' * (len(partion) - len(time)) + time + '\n'
-            text += "**" + partion + "**"
-            window[str(oneTime)].update(text)
-            oneTime += 1
-            if oneTime >= 4:
-                layout = [
-                    [sg.Text(text)],
-                    [sg.Button("Next"), sg.Button("OK")]
-                ]
-                event, value = window.read()
-                if event in [None,"OK"]:
-                    window.close()
-                    return
-                elif event == "Next":
-                    for i in range(4):
-                        window[str(i)].update('')
-                    oneTime = 0
-    event, value = window.read()
-    window.close()
 
 def get_messages_chain():
     message = []
@@ -648,7 +638,9 @@ def get_messages_chain():
         if block['previous_hash'] == 1:
             continue
         for trans in block['transactions']:
-            message.append({json.dumps({'username': trans['sender'], 'msg': trans['message']}): trans['time']})
+            if trans['sender'] == "0":
+                continue
+            message.append((json.dumps({'username': trans['sender'], 'msg': trans['message']}), trans['time']))
     return message
 
 def get_user_list():
@@ -695,9 +687,13 @@ def run():
     app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
 
 
-if __name__ == 'chain':
+if __name__ == 'app.chain.chain':
     t=threading.Thread(target=run)
     t.start()
     q=threading.Thread(target=run_mine)
     q.start()
     event.set()
+
+#1 py manage.py
+#2 mine
+#3 chain.app

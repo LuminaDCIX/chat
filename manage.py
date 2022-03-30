@@ -6,14 +6,9 @@
 
 
 import os
-import sys
 from app import create_app, socketio
+from app.chain import *
 
-
-sys.path.append("./app/chain")
-
-
-from chain import *
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 
