@@ -421,7 +421,6 @@ def register_nodes():
     reg_key = key
     nodes = ip
     ip2username[ip] = username
-    ip2username[my_ip] = current_user.username
     dic = {nodes: (reg_port, reg_key)}
     print(dic)
     json_data = {'nodes': dic}
@@ -532,10 +531,10 @@ def register_chain(ip, username):
         url2 = "http://"+ip+":5000/nodes/register"
         data2 = {'port': 5000, 'pub_key': pub_key, 'username' : username}
         try:
-            reply = requests.post(url2, json=data2,timeout=3)
-            nodes = reply.json()['total_nodes']
-            print(reply.json())
-            ip2username.update(reply.json()['ip2username'])
+            reply = requests.post(url2, json=data2,timeout=3).json()
+            nodes = reply['total_nodes']
+            print(reply)
+            ip2username.update(reply['ip2username'])
             blockchain.nodes.update(nodes)
         except requests.exceptions.Timeout as e:
             print("Timeout!")
