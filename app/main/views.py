@@ -115,10 +115,11 @@ def send_chat(info):
 
 @main.route('/socketrecv', methods=['GET', 'POST'])
 def socket_recv():
-    username = requests.get_json().get('username')
+    username = request.get_json().get('username')
     data = request.get_json().get('data')
+    print(data, username)
     socket_send(data, username)
-    return 200
+    return "socket recv", 200
     
 
 def register(ip):
