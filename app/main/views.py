@@ -113,6 +113,14 @@ def send_chat(info):
     else:
         return info
 
+@main.route('/socketrecv', methods=['GET', 'POST'])
+def socket_recv():
+    username = requests.get_json().get('username')
+    data = request.get_json().get('data')
+    socket_send(data, username)
+    return 200
+    
+
 def register(ip):
     url = "http://"+my_ip+":5000/client/register"
     data = {'ip': ip, 'username': current_user.username}
@@ -140,3 +148,4 @@ def new_room(username):
     url = "http://"+my_ip+":5000/client/newroom"
     data = {'username': current_user.username}
     requests.post(url,json=data,timeout=3)
+

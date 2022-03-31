@@ -386,7 +386,9 @@ def new_transactions():
     # 创建一个新的事务
     index = blockchain.new_transaction(values['sender'], values['message'], values['time'], values['ipcnt'])
     response = {'message': f'Transaction will be added to Block {index}'}
-    socket_send(values['message'], values['sender'])
+    url = "http://"+ip+":8889/socketrecv"
+    data = {'data': values['message'],  'username' : values['sender']}
+    requests.post(url, json=data,timeout=3).json()
     return jsonify(response), 201
 
 
