@@ -106,8 +106,9 @@ def chat():
 @main.route('/api/sendchat/<info>', methods=['GET', 'POST'])
 def send_chat(info):
     if current_user.is_authenticated():
-        rname = request.form.get("rname", "")
+        #rname = request.form.get("rname", "")
         post(info)
+        socket_send(info, current_user.username)
         return info
     else:
         return info

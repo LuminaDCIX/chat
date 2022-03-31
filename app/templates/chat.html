@@ -220,8 +220,8 @@
 	    + '     <div class="name_time">' + from_name + ' · ' + itTime +'</div>'
 	    + '   </div>'
 	    + '</div>';
-	//$("#message_box").append(htmlData);
-	//$('#message_box').scrollTop($("#message_box")[0].scrollHeight + 20);
+	$("#message_box").append(htmlData);
+	$('#message_box').scrollTop($("#message_box")[0].scrollHeight + 20);
 	$("#message").val('');
 	setTimeout(function(){sendToServer(from_name, msg)}, 1000); //延时调用
     }
@@ -256,7 +256,7 @@
     var websocket_url = 'http://' + document.domain + ':' + location.port + '/testnamespace';
     var socket = io.connect(websocket_url);
     //发送消息
-    //console.log({{rname}});
+    console.log({{websocket_url}});
     socket.emit('request_for_response',{'param':'{{rname}}'});
 
 

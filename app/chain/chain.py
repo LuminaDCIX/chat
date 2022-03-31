@@ -14,7 +14,7 @@ import socket
 import threading
 import PySimpleGUI as sg
 import netifaces
-from flask_login import current_user
+from ..socket_conn import *
 
 ip2username = {}
 
@@ -386,6 +386,7 @@ def new_transactions():
     # 创建一个新的事务
     index = blockchain.new_transaction(values['sender'], values['message'], values['time'], values['ipcnt'])
     response = {'message': f'Transaction will be added to Block {index}'}
+    socket_send(values['message'], values['sender'])
     return jsonify(response), 201
 
 
