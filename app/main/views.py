@@ -11,7 +11,7 @@ from app.chain.chain import *
 from . import main
 import time
 import json
-from ..socket_conn import socket_send
+from ..socket_conn import socket_send, socket_send_user
 import hashlib
 
 class User:
@@ -67,10 +67,14 @@ def index():
 
 @main.route('/join_private_room/', methods=["GET", 'POST'])
 def join_private_room():
+    if not current_user.is_authenticated():
+        return redirect(url_for('main.login'), current_user=current_user)
     return render_template('join_private_room.html', current_user=current_user)
 
 @main.route('/new_private_room/', methods=["GET", 'POST'])
 def new_private_room():
+    if not current_user.is_authenticated():
+        return redirect(url_for('main.login'), current_user=current_user)
     new_room(current_user.username)
     return redirect(url_for('main.chat', current_user=current_user))
 
@@ -80,7 +84,6 @@ def join_private_room_ip():
     ip = request.form.get('ipaddr', '')
     register(ip)
     return redirect(url_for('main.chat', rname=rname, current_user=current_user))
-
 
 @main.route('/chat/', methods=['GET', 'POST'])
 def chat():
@@ -120,6 +123,13 @@ def socket_recv():
     print(data, username)
     socket_send(data, username)
     return "socket recv", 200
+
+
+@main.route('/socket_recvuser', methods=['GET', 'POST'])
+def socket_recv_user():
+    username = request.get_json().get('username')
+    socket_send_user(username)
+    return "socket recvuser", 200
     
 
 def register(ip):

@@ -112,6 +112,9 @@ class Blockchain(object):
             message = "Registing success!"
             self.nodes[address] = key
         print(self.nodes)
+        url = "http://"+my_ip+":8889/socket_recvuser"
+        data = {'username' : ip2username[address]}
+        requests.post(url, json=data,timeout=3)
         return message
 
     def valid_chain(self, chain):
@@ -387,7 +390,7 @@ def new_transactions():
     index = blockchain.new_transaction(values['sender'], values['message'], values['time'], values['ipcnt'])
     response = {'message': f'Transaction will be added to Block {index}'}
     url = "http://"+my_ip+":8889/socketrecv"
-    data = {'data': values['message'],  'username' : values['sender']}
+    data = {'data': values['message'],  'username' : ip2username[values['sender']]}
     requests.post(url, json=data,timeout=3)
     return jsonify(response), 201
 
@@ -411,7 +414,6 @@ def register_nodes():
     values = request.get_json()
     ip = request.remote_addr
     # 检查所需要的字段是否位于POST的data中
-    print(id(ip2username))
     required = ['port', 'pub_key', 'username']
     if not all(k in values for k in required):
         return 'Missing values', 400

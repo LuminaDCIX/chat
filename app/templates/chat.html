@@ -285,6 +285,15 @@
         $('#message_box').scrollTop($("#message_box")[0].scrollHeight + 20);
     });
 
+    socket.on('response_user',function(data){
+        var username = data.username;
+        var ul = document.getElementById("user_list");
+        var li = document.createElement('li');
+        li.innerHTML = '<li class="fn-clear" data-id="3"><span><img src="{{ current_user.gravatar(name=' + username + ', size=40) }}" width="30" height="30"  alt=""/></span><em>{{ ' + username + ' }}</em><small class="online" title="在线"></small></li>';
+        ul.appendChild(li);
+    });
+
+    
     </script>
 </body>
 {% endblock %}
