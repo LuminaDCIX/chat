@@ -4,7 +4,7 @@
 {% block head %}
 <head>
   <meta charset="utf-8">
-  <title>Hi Hi 聊天室</title>
+  <title>聊天室</title>
   <link rel="shortcut icon" href="{{ url_for('static',filename='chat/images/hihi.jpg')}}">
   <link rel="icon" href="{{ url_for('static',filename='chat/images/hihi.jpg')}}" type="image/x-icon">
   <link type="text/css" rel="stylesheet" href="/static/chat/css/style.css">
@@ -17,7 +17,6 @@
 <body>
   <div class="chatbox">
     <div class="chat_top fn-clear">
-      <div class="uinfo fn-clear"  style="float: left;"><div class="uface"><h1 style="color: #7777">ROOM: {{ rname }}</h1></div></div>
       <div class="uinfo fn-clear">
         {% if current_user.is_authenticated() %}
         <div class="uface"><img src="{{ current_user.gravatar(size=40) }}" width="40" height="40"  alt=""/></div>
@@ -292,7 +291,7 @@
         var template = document.createElement('template');
         html = '<li class="fn-clear" data-id="3"><span><img src="http://www.gravatar.com/avatar/' + hash + '?s=40&d=identicon&r=g" width="30" height="30"  alt=""/></span><em> ' + username + ' </em><small class="online" title="在线"></small></li>'.trim();
         template.innerHTML = html;
-        ul.appendChild(template.firstChild);
+        ul.appendChild(template.content.firstChild);
     });
 
     

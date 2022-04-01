@@ -80,10 +80,9 @@ def new_private_room():
 
 @main.route('/join_private_room_ip/', methods=["GET", 'POST'])
 def join_private_room_ip():
-    rname = request.form.get('rname', '')
     ip = request.form.get('ipaddr', '')
     register(ip)
-    return redirect(url_for('main.chat', rname=rname, current_user=current_user))
+    return redirect(url_for('main.chat', current_user=current_user))
 
 @main.route('/chat/', methods=['GET', 'POST'])
 def chat():
@@ -135,28 +134,28 @@ def socket_recv_user():
 def register(ip):
     url = "http://"+my_ip+":5000/client/register"
     data = {'ip': ip, 'username': current_user.username}
-    requests.post(url, json=data,timeout=3)
+    requests.post(url, json=data,timeout=30)
 
 def get_user_list():
     url = "http://"+my_ip+":5000/client/userlist"
     print(url)
-    reply = requests.post(url,timeout=3).json()
+    reply = requests.post(url,timeout=30).json()
     print("reply =", reply)
     return reply['userlist']
 
 
 def get_messages_chain():
     url = "http://"+my_ip+":5000/client/message"
-    reply = requests.post(url,timeout=3).json()
+    reply = requests.post(url,timeout=30).json()
     return reply['message']
 
 def post(message):
     url = "http://"+my_ip+":5000/client/post"
     data = {'msg': message}
-    requests.post(url, json=data,timeout=3)
+    requests.post(url, json=data,timeout=30)
 
 def new_room(username):
     url = "http://"+my_ip+":5000/client/newroom"
     data = {'username': current_user.username}
-    requests.post(url,json=data,timeout=3)
+    requests.post(url,json=data,timeout=30)
 

@@ -114,7 +114,7 @@ class Blockchain(object):
         print(self.nodes)
         url = "http://"+my_ip+":8889/socket_recvuser"
         data = {'username' : ip2username[address]}
-        requests.post(url, json=data,timeout=3)
+        requests.post(url, json=data,timeout=30)
         return message
 
     def valid_chain(self, chain):
@@ -312,7 +312,7 @@ def mine():
         if hostIP == node + f":{portKey[0]}":
             continue
         try:
-            r = requests.post("http://" + node + f":{portKey[0]}" + "/block/new", json=json_data,timeout=3)
+            r = requests.post("http://" + node + f":{portKey[0]}" + "/block/new", json=json_data,timeout=30)
             print(r.text)
         except requests.exceptions.Timeout as e:
             print(str(e))
@@ -391,7 +391,7 @@ def new_transactions():
     response = {'message': f'Transaction will be added to Block {index}'}
     url = "http://"+my_ip+":8889/socketrecv"
     data = {'data': values['message'],  'username' : ip2username[values['sender']]}
-    requests.post(url, json=data,timeout=3)
+    requests.post(url, json=data,timeout=30)
     return jsonify(response), 201
 
 
@@ -438,7 +438,7 @@ def register_nodes():
             print("Self ip:", node)
             continue
         try:
-            r = requests.post("http://" + node + f":{portKey[0]}" + "/nodes/add", json=json_data,timeout=3)
+            r = requests.post("http://" + node + f":{portKey[0]}" + "/nodes/add", json=json_data,timeout=30)
             print(r.text)
         except ConnectTimeoutError:
             print("Connect", node, "Error.")
@@ -534,7 +534,7 @@ def regiser():
         url2 = "http://"+ip+":5000/nodes/register"
         data2 = {'port': 5000, 'pub_key': pub_key}
         try:
-            reply = requests.post(url2, json=data2,timeout=3)
+            reply = requests.post(url2, json=data2,timeout=30)
             nodes = reply.json()['total_nodes']
             blockchain.nodes.update(nodes)
             sg.Popup(reply.text)
@@ -572,7 +572,7 @@ def register_chain(ip, username):
         url2 = "http://"+ip+":5000/nodes/register"
         data2 = {'port': 5000, 'pub_key': pub_key, 'username' : username}
         try:
-            reply = requests.post(url2, json=data2,timeout=3).json()
+            reply = requests.post(url2, json=data2,timeout=30).json()
             nodes = reply['total_nodes']
             print(reply)
             ip2username.update(reply['ip2username'])
@@ -596,7 +596,7 @@ def post_chain(message):
         if ip != my_ip:
             url = "http://" + ip + ":5000/transactions/new"
             try:
-                reply=requests.post(url,json=data,timeout=3)
+                reply=requests.post(url,json=data,timeout=30)
                 print(reply.text)
             except requests.exceptions.Timeout as e:
                 print(str(e))
@@ -629,7 +629,7 @@ def post():
         if ip != my_ip:
             url = "http://" + ip + ":5000/transactions/new"
             try:
-                reply=requests.post(url,json=data,timeout=3)
+                reply=requests.post(url,json=data,timeout=30)
                 sg.Popup(reply.text)
             except requests.exceptions.Timeout as e:
                 sg.Popup(str(e))

@@ -36,10 +36,6 @@
         <h1>Hello, {{ current_user.username }}!</h1>
     </div>
     <form action="{{ url_for('main.join_private_room_ip') }}" method="POST" class="comment-form">
-      <div class="form-group comment-form-author">
-        <label for="rname">Room Name <span class="required">*</span></label>
-        <input class="form-control" id="rname" name="rname" type="text" value="" size="30" aria-required='true' />
-      </div>
       
       <div class="form-group comment-form-author">
         <label for="ipaddr">Ip Address <span class="required">*</span></label>
