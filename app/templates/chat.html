@@ -257,7 +257,7 @@
     var socket = io.connect(websocket_url);
     //发送消息
     console.log({{websocket_url}});
-    socket.emit('request_for_response')//,{'param':'{{rname}}'});
+    //socket.emit('request_for_response')//,{'param':'{{rname}}'});
 
 
     //监听回复的消息
@@ -288,10 +288,11 @@
     socket.on('response_user',function(data){
         var username = data.username;
         var ul = document.getElementById("user_list");
-        var li = document.createElement('li');
         var hash = md5(username + "@hihichat.com");
-        li.innerHTML = '<li class="fn-clear" data-id="3"><span><img src="http://www.gravatar.com/avatar/' + hash + '?s=40&d=identicon&r=g" width="30" height="30"  alt=""/></span><em> ' + username + ' </em><small class="online" title="在线"></small></li>';
-        ul.appendChild(li);
+        var template = document.createElement('template');
+        html = '<li class="fn-clear" data-id="3"><span><img src="http://www.gravatar.com/avatar/' + hash + '?s=40&d=identicon&r=g" width="30" height="30"  alt=""/></span><em> ' + username + ' </em><small class="online" title="在线"></small></li>'.trim();
+        template.innerHTML = html;
+        ul.appendChild(template.firstChild);
     });
 
     
