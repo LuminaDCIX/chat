@@ -82,7 +82,7 @@
         </div>
       </div>
       <div class="chat_right">
-        <ul class="user_list" title="示例用户">
+        <ul class="user_list" title="示例用户" id="user_list">
           <li class="fn-clear selected"><em id="all">所有用户</em></li>
           {% if current_user.is_authenticated() %}
           {% for i in user_list %}
@@ -289,7 +289,8 @@
         var username = data.username;
         var ul = document.getElementById("user_list");
         var li = document.createElement('li');
-        li.innerHTML = '<li class="fn-clear" data-id="3"><span><img src="{{ current_user.gravatar(name=' + username + ', size=40) }}" width="30" height="30"  alt=""/></span><em>{{ ' + username + ' }}</em><small class="online" title="在线"></small></li>';
+        var hash = md5(username + "@hihichat.com");
+        li.innerHTML = '<li class="fn-clear" data-id="3"><span><img src="http://www.gravatar.com/avatar/' + hash + '?s=40&d=identicon&r=g" width="30" height="30"  alt=""/></span><em> ' + username + ' </em><small class="online" title="在线"></small></li>';
         ul.appendChild(li);
     });
 
