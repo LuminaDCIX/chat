@@ -68,13 +68,13 @@ def index():
 @main.route('/join_private_room/', methods=["GET", 'POST'])
 def join_private_room():
     if not current_user.is_authenticated():
-        return redirect(url_for('main.login'), current_user=current_user)
+        return redirect(url_for('main.login', current_user=current_user))
     return render_template('join_private_room.html', current_user=current_user)
 
 @main.route('/new_private_room/', methods=["GET", 'POST'])
 def new_private_room():
     if not current_user.is_authenticated():
-        return redirect(url_for('main.login'), current_user=current_user)
+        return redirect(url_for('main.login', current_user=current_user))
     new_room(current_user.username)
     return redirect(url_for('main.chat', current_user=current_user))
 
