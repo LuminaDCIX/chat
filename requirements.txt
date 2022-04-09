@@ -1,0 +1,8 @@
+Flask==2.0.3
+Flask_Bootstrap==3.3.7.1
+Flask_SocketIO==5.1.1
+netifaces==0.10.9
+pycryptodome==3.14.1
+PySimpleGUI==4.59.0
+requests==2.25.1
+urllib3==1.26.5
