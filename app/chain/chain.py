@@ -48,7 +48,7 @@ def get_host_ip():
     ips = get_all_ips()
     print(ips)
     for _ip in ips:
-        if (_ip.startswith('10')):
+        if (_ip.startswith('172')):
             ip = _ip
 
         #s.close()

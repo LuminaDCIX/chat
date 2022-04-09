@@ -38,7 +38,7 @@ def login():
     print(username)
     if username != '' :
         current_user.username = username
-        return redirect(url_for('main.index',current_user=current_user))
+        return redirect(url_for('main.index',current_user=current_user, ipaddr=get_host_ip()))
     return render_template('login.html',current_user=current_user)
 
 
@@ -50,12 +50,12 @@ def logout():
 
 @main.route('/')
 def home():
-    return render_template('index.html',current_user=current_user)
+    return render_template('index.html',current_user=current_user,  ipaddr=get_host_ip())
 
 
 @main.route('/index/')
 def index():
-    return render_template('index.html', current_user=current_user)
+    return render_template('index.html', current_user=current_user, ipaddr=get_host_ip())
 
 
 @main.route('/join_private_room/', methods=["GET", 'POST'])
