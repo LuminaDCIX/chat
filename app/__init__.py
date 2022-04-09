@@ -1,9 +1,3 @@
-# coding = utf-8
-"""
-@author: zhou
-@time:2019/6/20 10:29
-"""
-
 from flask import Flask
 from flask_bootstrap import Bootstrap
 from flask_socketio import SocketIO

@@ -1,9 +1,3 @@
-# coding = utf-8
-"""
-@author: zhou
-@time:2019/6/20 10:32
-"""
-
 import os
 
 

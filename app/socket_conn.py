@@ -1,10 +1,3 @@
-# coding = utf-8
-"""
-@author: zhou
-@time:2019/6/20 11:50
-"""
-
-
 from . import socketio
 from flask_socketio import emit
 

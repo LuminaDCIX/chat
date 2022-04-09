@@ -1,10 +1,3 @@
-# coding = utf-8
-"""
-@author: zhou
-@time:2019/6/20 10:33
-"""
-
-
 from flask import render_template, redirect, url_for, request
 
 from app.chain.chain import *
